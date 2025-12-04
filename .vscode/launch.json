@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CeaApplication<cea>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.jesus.cea.CeaApplication",
+            "projectName": "cea",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

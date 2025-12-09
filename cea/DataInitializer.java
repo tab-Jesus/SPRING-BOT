@@ -13,11 +13,11 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase(UsuarioRepository repo, PasswordEncoder encoder) {
         return args -> {
-            // Crear ADMIN si no existe
+            
             if (!repo.existsByUsername("admin")) {
                 Usuario admin = new Usuario();
                 admin.setUsername("admin");
-                admin.setPassword(encoder.encode("admin123")); // Contraseña encriptada
+                admin.setPassword(encoder.encode("admin123")); 
                 admin.setRole("ADMIN");
                 admin.setEmail("admin@empresa.com");
                 admin.setActivo(true);
@@ -25,11 +25,10 @@ public class DataInitializer {
                 System.out.println(" Usuario ADMIN creado: user: admin / pass: admin123");
             }
 
-            // Crear USER si no existe
             if (!repo.existsByUsername("empleado")) {
                 Usuario user = new Usuario();
                 user.setUsername("empleado");
-                user.setPassword(encoder.encode("user123")); // Contraseña encriptada
+                user.setPassword(encoder.encode("user123")); 
                 user.setRole("USER");
                 user.setEmail("empleado@empresa.com");
                 user.setActivo(true);

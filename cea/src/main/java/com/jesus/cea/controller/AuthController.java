@@ -29,25 +29,21 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Este es el método que busca tu React
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // 1. Esto valida usuario y contraseña encriptada automáticamente
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 2. Si pasa la autenticación, buscamos los datos completos del usuario
             Usuario usuario = usuarioRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
             
-            // 3. Preparamos la respuesta exacta que espera tu React
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Login exitoso");
-            response.put("user", usuario); // Aquí va el rol, nombre, etc.
+            response.put("user", usuario); 
             
             return ResponseEntity.ok(response);
 
@@ -64,12 +60,10 @@ public class AuthController {
         return ResponseEntity.ok("{\"status\": \"UP\"}");
     }
 
-    // Clase auxiliar para recibir los datos
     public static class LoginRequest {
         private String username;
         private String password;
         
-        // Getters y Setters
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
         public String getPassword() { return password; }

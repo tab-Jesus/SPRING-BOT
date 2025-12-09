@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Necesario para el Login Real
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// --- INTERFACES ---
 interface Usuario {
   id: number;
   username: string;
@@ -16,53 +15,42 @@ interface Gasto {
   valor: number;
   lugar: string;
   descripcion: string;
-  usuario: string; // Para saber de quién es el gasto visual
+  usuario: string;
 }
 
 function App() {
-  // --- ESTADOS ---
   const [user, setUser] = useState<Usuario | null>(null);
   const [gastos, setGastos] = useState<Gasto[]>([]);
-  
-  // Formulario
   const [fecha, setFecha] = useState('');
   const [valorInput, setValorInput] = useState('');
   const [lugar, setLugar] = useState('');
   const [descripcion, setDescripcion] = useState('');
-
-  // Login
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // URL del Backend (SOLO PARA LOGIN)
   const API_URL = 'http://localhost:8080/api/auth/login';
 
-  // --- CARGAR DATOS AL INICIAR ---
   useEffect(() => {
-    // 1. Recuperar sesión si existe
     const session = localStorage.getItem('cea_session');
     if (session) {
       setUser(JSON.parse(session));
     }
 
-    // 2. Recuperar gastos VISUALES (del navegador, no de la BD)
     const gastosVisuales = localStorage.getItem('cea_gastos_visuales');
     if (gastosVisuales) {
       setGastos(JSON.parse(gastosVisuales));
     }
   }, []);
 
-  // --- LOGIN REAL (CONECTADO A BASE DE DATOS) ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Petición real al servidor
       const response = await axios.post(API_URL, {
         username: username,
         password: password
@@ -71,7 +59,6 @@ function App() {
       if (response.data.success) {
         const userData = response.data.user;
         
-        // CORRECCIÓN DE ROL: Si en BD dice "admin" (minúscula), lo pasamos a "ADMIN"
         if (userData.role && userData.role.toUpperCase() === 'ADMIN') {
             userData.role = 'ADMIN';
         }
@@ -100,12 +87,10 @@ function App() {
     setPassword('');
   };
 
-  // --- REGISTRAR GASTO (SOLO VISUAL - NO BD) ---
   const handleRegistrar = (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(''); setError('');
 
-    // Validación de número
     const valStr = valorInput.replace(',', '.');
     const valor = parseFloat(valStr);
 
@@ -114,9 +99,8 @@ function App() {
       return;
     }
 
-    // Crear gasto local
     const nuevoGasto: Gasto = {
-      id: Date.now(), // ID falso basado en la hora
+      id: Date.now(),
       fecha: fecha,
       valor: valor,
       lugar: lugar,
@@ -124,31 +108,22 @@ function App() {
       usuario: user?.username || 'Anónimo'
     };
 
-    // Guardar en el navegador (LocalStorage)
     const nuevaLista = [...gastos, nuevoGasto];
     setGastos(nuevaLista);
     localStorage.setItem('cea_gastos_visuales', JSON.stringify(nuevaLista));
 
-    // Limpiar form
-    setMsg('✅ Gasto guardado (Visualmente)');
+    setMsg(' Gasto guardado (Visualmente)');
     setValorInput(''); setLugar(''); setDescripcion('');
     setTimeout(() => setMsg(''), 3000);
   };
 
-  // --- CÁLCULOS Y VISTAS ---
-
-  // Determinar si es admin
   const isAdmin = user?.role === 'ADMIN';
-
-  // Filtrar gastos: Admin ve todo lo del navegador, User ve solo lo suyo
   const misGastos = isAdmin 
     ? gastos 
     : gastos.filter(g => g.usuario === user?.username);
 
-  // Calcular total de la tabla actual
   const totalAcumulado = misGastos.reduce((acc, curr) => acc + curr.valor, 0);
 
-  // Agrupar por usuario (Solo para el Admin)
   const resumenPorUsuario = Object.values(gastos.reduce((acc: any, curr) => {
     if (!acc[curr.usuario]) {
       acc[curr.usuario] = { nombre: curr.usuario, total: 0, conteo: 0 };
@@ -158,8 +133,6 @@ function App() {
     return acc;
   }, {}));
 
-
-  // --- VISTA 1: LOGIN (REAL) ---
   if (!user) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100" 
@@ -179,7 +152,7 @@ function App() {
             </div>
             <div className="mb-4">
               <label className="fw-bold small text-muted">CONTRASEÑA</label>
-              <input type="password" class="form-control" placeholder="****" value={password} onChange={e=>setPassword(e.target.value)} />
+              <input type="password" className="form-control" placeholder="****" value={password} onChange={e=>setPassword(e.target.value)} />
             </div>
             <button className="btn btn-primary w-100 fw-bold py-2" disabled={loading}>
               {loading ? 'VALIDANDO EN BD...' : 'INICIAR SESIÓN'}
@@ -195,7 +168,6 @@ function App() {
     );
   }
 
-  // --- VISTA 2: DASHBOARD (VISUAL) ---
   return (
     <div className="min-vh-100 bg-light">
       <nav className="navbar navbar-dark bg-dark px-4 mb-4 shadow">
@@ -210,8 +182,6 @@ function App() {
       </nav>
 
       <div className="container pb-5">
-        
-        {/* PANEL ADMIN: RESUMEN (Solo si es ADMIN en BD) */}
         {isAdmin && (
           <div className="card shadow-sm border-0 mb-4">
             <div className="card-header bg-secondary text-white fw-bold d-flex justify-content-between align-items-center">
@@ -229,7 +199,6 @@ function App() {
                 </thead>
                 <tbody>
                   {resumenPorUsuario.length > 0 ? (
-                    // @ts-ignore
                     resumenPorUsuario.map((u: any, i) => (
                       <tr key={i}>
                         <td className="fw-bold text-dark">{u.nombre}</td>
@@ -249,8 +218,6 @@ function App() {
         )}
 
         <div className="row g-4">
-          
-          {/* REGISTRO VISUAL */}
           <div className="col-lg-4">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-header bg-white text-primary fw-bold border-bottom">
@@ -287,7 +254,6 @@ function App() {
             </div>
           </div>
 
-          {/* TABLA VISUAL */}
           <div className="col-lg-8">
             <div className="card shadow-sm border-0">
               <div className="card-header bg-white d-flex justify-content-between align-items-center">
@@ -340,7 +306,6 @@ function App() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

@@ -25,15 +25,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // CORRECCIÓN 1: Forzamos el uso de nuestra configuración CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable()) 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() 
+                // CORRECCIÓN 1: Forzamos el uso de nuestra configuración CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/usuarios/**").permitAll()
                 .anyRequest().authenticated()
-            )
-            .httpBasic(withDefaults());
+                )
+                .httpBasic(withDefaults());
 
         return http.build();
     }
@@ -42,12 +42,11 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Asegúrate de que este puerto coincida con tu navegador (normalmente 5173 o 3000)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000")); 
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -58,7 +57,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // --- CORRECCIÓN 2: ESTE ES EL CÓDIGO QUE TE FALTA PARA ARREGLAR EL ERROR ---
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
